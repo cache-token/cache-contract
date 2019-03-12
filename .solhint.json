@@ -1,0 +1,11 @@
+{
+  "extends": "solhint:all",
+  "rules": {
+    "max-line-length": ["error", 120], 
+    "indent": ["warn", 2],
+    "mark-callable-contracts": false,
+    "not-rely-on-time": false,
+    "function-max-lines": false,
+    "code-complexity": false
+  }
+}
