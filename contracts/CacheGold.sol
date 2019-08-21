@@ -24,16 +24,16 @@ contract CacheGold is IERC20, Ownable {
   uint256 private constant TOKEN = 10 ** uint256(decimals);
 
   // Basis points means divide by 10,000 to get decimal
-  uint private constant BASIS_POINTS_MULTIPLIER = 10000;
+  uint256 private constant BASIS_POINTS_MULTIPLIER = 10000;
 
   // Initial basis points for transfer fee
-  uint private _transferFeeBasisPoints = 10;
+  uint256 private _transferFeeBasisPoints = 10;
 
   // Cap on total number of tokens that can ever be produced
   uint256 public constant SUPPLY_CAP = 8133525786 * TOKEN;
 
   // How many days need to pass before late fees can be collected (3 years)
-  uint public constant INACTIVE_THRESHOLD_DAYS = 1095;
+  uint256 public constant INACTIVE_THRESHOLD_DAYS = 1095;
 
   // Token balance of each address
   mapping (address => uint256) private _balances;
@@ -42,10 +42,10 @@ contract CacheGold is IERC20, Ownable {
   mapping (address => mapping (address => uint256)) private _allowances;
 
   // Last time storage fee was paid
-  mapping (address => uint) private _timeStorageFeePaid;
+  mapping (address => uint256) private _timeStorageFeePaid;
   
   // Last time the address produced a transaction on this contract
-  mapping (address => uint) private _timeLastActivity;
+  mapping (address => uint256) private _timeLastActivity;
 
   // Amount of inactive fees already paid
   mapping (address => uint256) private _inactiveFeePaid;
@@ -60,7 +60,7 @@ contract CacheGold is IERC20, Ownable {
   mapping (address => bool) private _feeExempt;
 
   // Save grace period on storage fees for an address
-  mapping (address => uint) private _storageFeeGracePeriod;
+  mapping (address => uint256) private _storageFeeGracePeriod;
   
   // Current total number of tokens created
   uint256 private _totalSupply;
@@ -98,7 +98,7 @@ contract CacheGold is IERC20, Ownable {
   address private _feeEnforcer;
 
   // Grace period before storage fees kick in
-  uint private _storageFeeGracePeriodDays = 0;
+  uint256 private _storageFeeGracePeriodDays = 0;
 
   // When gold bars are locked, we add tokens to circulation either
   // through moving them from the unbacked treasury or minting new ones,
@@ -418,7 +418,7 @@ contract CacheGold is IERC20, Ownable {
   * fees begin accruing. Note that calling this will not change the grace period
   * for addresses already actively inside a grace period
   */
-  function setStorageFeeGracePeriodDays(uint daysGracePeriod) external onlyOwner {
+  function setStorageFeeGracePeriodDays(uint256 daysGracePeriod) external onlyOwner {
     _storageFeeGracePeriodDays = daysGracePeriod;
   }
 
@@ -443,7 +443,7 @@ contract CacheGold is IERC20, Ownable {
   * @dev Set a new transfer fee in basis points, must be less than or equal to 10 basis points
   * @param fee The new transfer fee in basis points
   */
-  function setTransferFeeBasisPoints(uint fee) external onlyOwner {
+  function setTransferFeeBasisPoints(uint256 fee) external onlyOwner {
     require(fee <= 10,
             "Transfer fee basis points must be an integer between 0 and 10");
     _transferFeeBasisPoints = fee;
@@ -537,14 +537,14 @@ contract CacheGold is IERC20, Ownable {
   * @return the current number of days and address is exempt 
   * from storage fees upon receiving tokens
   */
-  function storageFeeGracePeriodDays() external view returns(uint) {
+  function storageFeeGracePeriodDays() external view returns(uint256) {
     return _storageFeeGracePeriodDays;
   }
 
   /**
   * @return the current transfer fee in basis points [0-10]
   */
-  function transferFeeBasisPoints() external view returns(uint) {
+  function transferFeeBasisPoints() external view returns(uint256) {
     return _transferFeeBasisPoints;
   }
   
@@ -590,9 +590,9 @@ contract CacheGold is IERC20, Ownable {
   /**
   * @dev Get the number of days since the account last paid storage fees
   * @param account The address to check
-  * @return A uint representing the number of days since storage fees where last paid
+  * @return A uint256 representing the number of days since storage fees where last paid
   */
-  function daysSincePaidStorageFee(address account) public view returns(uint) {
+  function daysSincePaidStorageFee(address account) public view returns(uint256) {
     if (isInactive(account) || _timeStorageFeePaid[account] == 0) {
       return 0;
     }
@@ -602,10 +602,10 @@ contract CacheGold is IERC20, Ownable {
   /**
   * @dev Get the days since the account last sent a transaction to the contract (activity)
   * @param account The address to check
-  * @return A uint representing the number of days since the address last had activity 
+  * @return A uint256 representing the number of days since the address last had activity 
   * with the contract
   */
-  function daysSinceActivity(address account) public view returns(uint) {
+  function daysSinceActivity(address account) public view returns(uint256) {
     if (_timeLastActivity[account] == 0) {
       return 0;
     }
@@ -635,9 +635,9 @@ contract CacheGold is IERC20, Ownable {
       return 0;
     }
 
-    uint daysSinceStoragePaid = daysSincePaidStorageFee(account);
-    uint daysInactive = daysSinceActivity(account);
-    uint gracePeriod = _storageFeeGracePeriod[account];
+    uint256 daysSinceStoragePaid = daysSincePaidStorageFee(account);
+    uint256 daysInactive = daysSinceActivity(account);
+    uint256 gracePeriod = _storageFeeGracePeriod[account];
 
     // If there is a grace period, we can deduct it from the daysSinceStoragePaid
     if (gracePeriod > 0) {
@@ -675,7 +675,7 @@ contract CacheGold is IERC20, Ownable {
    */
   function calcInactiveFee(address account) public view returns(uint256) {
     uint256 balance = _balances[account];
-    uint daysInactive = daysSinceActivity(account);
+    uint256 daysInactive = daysSinceActivity(account);
 
     // if the account is marked inactive already, can use the snapshot balance
     if (isInactive(account)) {
@@ -760,7 +760,7 @@ contract CacheGold is IERC20, Ownable {
    * @param daysSinceStoragePaid The number days that have passed since fees where last paid
    * @return A uint256 representing the storage fee owed
    */
-  function storageFee(uint256 balance, uint daysSinceStoragePaid) public pure returns(uint256) {
+  function storageFee(uint256 balance, uint256 daysSinceStoragePaid) public pure returns(uint256) {
     uint256 fee = balance.mul(TOKEN).mul(daysSinceStoragePaid).div(365).div(40000000000);
     if (fee > balance) {
       return balance;
@@ -1128,10 +1128,10 @@ contract CacheGold is IERC20, Ownable {
   * @return uint256 for inactive fees due
   */
   function _inactiveFee(uint256 balance,
-                        uint daysInactive,
+                        uint256 daysInactive,
                         uint256 feePerYear, 
                         uint256 paidAlready) internal pure returns(uint256) {
-    uint daysDue = daysInactive.sub(INACTIVE_THRESHOLD_DAYS);
+    uint256 daysDue = daysInactive.sub(INACTIVE_THRESHOLD_DAYS);
     uint256 totalDue = feePerYear.mul(TOKEN).mul(daysDue).div(365).div(TOKEN).sub(paidAlready);
 
     // The fee per year can be off by 0.00000001 so we can collect
