@@ -679,7 +679,7 @@ contract CacheGold is IERC20, Ownable {
 
     // if the account is marked inactive already, can use the snapshot balance
     if (isInactive(account)) {
-      return _inactiveFee(balance,
+      return _calcInactiveFee(balance,
                           daysInactive,
                           _inactiveFeePerYear[account],
                           _inactiveFeePaid[account]);
@@ -687,10 +687,10 @@ contract CacheGold is IERC20, Ownable {
       // Account has not yet been marked inactive in contract, but the inactive fees will still be due. 
       // Just assume snapshotBalance will be current balance after fees
       uint256 snapshotBalance = balance.sub(calcStorageFee(account));
-      return _inactiveFee(snapshotBalance,                          // current balance
-                          daysInactive,                             // number of days inactive
-                          _calcInactiveFeePerYear(snapshotBalance), // the inactive fee per year based on balance
-                          0);                                       // fees paid already
+      return _calcInactiveFee(snapshotBalance,                          // current balance
+                              daysInactive,                             // number of days inactive
+                              _calcInactiveFeePerYear(snapshotBalance), // the inactive fee per year based on balance
+                              0);                                       // fees paid already
     }
     return 0;
   }
@@ -917,7 +917,7 @@ contract CacheGold is IERC20, Ownable {
    * @return A uint256 representing the inactive fee paid
    */
   function _payInactiveFee(address account) internal returns(uint256) {
-    uint256 fee = _inactiveFee(
+    uint256 fee = _calcInactiveFee(
         _balances[account],
         daysSinceActivity(account),
         _inactiveFeePerYear[account],
@@ -947,7 +947,7 @@ contract CacheGold is IERC20, Ownable {
         daysSinceActivity(account) >= INACTIVE_THRESHOLD_DAYS &&
         !isInactive(account) &&
         !isFeeExempt(account) &&
-       _balances[account].sub(calcStorageFee(account)) > 0) {
+        _balances[account].sub(calcStorageFee(account)) > 0) {
       return true;
     }
     return false;
@@ -972,7 +972,10 @@ contract CacheGold is IERC20, Ownable {
     // Set the account inactive on deducted balance
     _inactiveFeePerYear[account] = _calcInactiveFeePerYear(snapshotBalance);
     emit AccountInactive(account, _inactiveFeePerYear[account]);
-    uint256 inactiveFees = _inactiveFee(snapshotBalance, daysSinceActivity(account), _inactiveFeePerYear[account], 0);
+    uint256 inactiveFees = _calcInactiveFee(snapshotBalance,
+                                            daysSinceActivity(account),
+                                            _inactiveFeePerYear[account],
+                                            0);
 
     // Deduct owed storage and inactive fees
     uint256 fees = storeFee.add(inactiveFees);
@@ -1127,7 +1130,7 @@ contract CacheGold is IERC20, Ownable {
   * @param paidAlready The amount of inactive fees that have been paid already
   * @return uint256 for inactive fees due
   */
-  function _inactiveFee(uint256 balance,
+  function _calcInactiveFee(uint256 balance,
                         uint256 daysInactive,
                         uint256 feePerYear, 
                         uint256 paidAlready) internal pure returns(uint256) {
