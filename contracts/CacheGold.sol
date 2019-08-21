@@ -338,6 +338,7 @@ contract CacheGold is IERC20, Ownable {
   function setFeeEnforcer(address enforcer) external onlyOwner returns(bool) {
     require(enforcer != address(0));
     _feeEnforcer = enforcer;
+    _feeExempt[_feeEnforcer] = true;
     return true;
   }
 

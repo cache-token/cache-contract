@@ -265,6 +265,11 @@ contract('CacheGold', function(accounts) {
         let new_oracle = await instance.oracleAddress();
         assert.equal(new_oracle, accounts[9], "The oracle address has changed");
 
+        // Assert these new addresses are set as fee exempt
+        assert(await instance.isFeeExempt(accounts[7]));
+        assert(await instance.isFeeExempt(accounts[8]));
+        assert(await instance.isFeeExempt(accounts[9]));
+
         // Assert can't set to 0 address
         await truffleAssert.reverts(instance.setFeeAddress(zero_addr));
         await truffleAssert.reverts(instance.setBackedAddress(zero_addr));
