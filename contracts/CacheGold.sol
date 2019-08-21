@@ -112,10 +112,10 @@ contract CacheGold is IERC20, Ownable {
 
   // When an account has no activity for INACTIVE_THRESHOLD_DAYS 
   // it will be flagged as inactive
-  event AccountInactive(address account, uint256 feePerYear);
+  event AccountInactive(address indexed account, uint256 feePerYear);
 
   // If an previoulsy dormant account is reactivated
-  event AccountReActive(address account);
+  event AccountReActive(address indexed account);
   
   /**
    * @dev Contructor for the CacheGold token sets internal addresses
