@@ -121,7 +121,9 @@ contract CacheGold is IERC20, Ownable {
    * @dev Contructor for the CacheGold token sets internal addresses
    * @param unbackedTreasury The address of the unbacked treasury
    * @param backedTreasury The address of the backed treasury
-   * @param oracle The address of the locked gold oracle
+   * @param feeAddress The address where fees are collected
+   * @param redeemAddress The address where tokens are send to redeem physical gold
+   * @param oracle The address of the LockedGoldOracle
    */
   constructor(address unbackedTreasury,
               address backedTreasury,
