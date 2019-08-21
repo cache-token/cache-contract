@@ -22,8 +22,26 @@ contract CacheGold is IERC20, Ownable {
   // 10^8 shortcut
   uint256 private constant TOKEN = 10 ** uint256(decimals);
 
+  // Seconds in a day
+  uint256 private constant DAY = 86400;
+
+  // Days in a year
+  uint256 private constant YEAR = 365;
+
+  // The maximum transfer fee is 10 basis points
+  uint256 private constant MAX_TRANSFER_FEE_BASIS_POINTS = 10;
+
   // Basis points means divide by 10,000 to get decimal
   uint256 private constant BASIS_POINTS_MULTIPLIER = 10000;
+
+  // The storage fee of 0.25%
+  uint256 private constant STORAGE_FEE_DENOMINATOR = 40000000000;
+
+  // The inactive fee of 0.50%
+  uint256 private constant INACTIVE_FEE_DENOMINATOR = 20000000000;
+
+  // The minimum balance that would accure a storage fee after 1 day
+  uint256 private constant MIN_BALANCE_FOR_FEES = 146000;
 
   // Initial basis points for transfer fee
   uint256 private _transferFeeBasisPoints = 10;
@@ -322,7 +340,7 @@ contract CacheGold is IERC20, Ownable {
     } else {
       // Otherwise just force paying owed storage fees, which can only
       // be called if they are more than 365 days overdue
-      require(daysSincePaidStorageFee(account) >= 365,
+      require(daysSincePaidStorageFee(account) >= YEAR,
               "Account has paid storage fees more recently than 365 days");
       uint256 paid = _payStorageFee(account);
       require(paid > 0, "No appreciable storage fees due, will refund gas");
@@ -444,7 +462,7 @@ contract CacheGold is IERC20, Ownable {
   * @param fee The new transfer fee in basis points
   */
   function setTransferFeeBasisPoints(uint256 fee) external onlyOwner {
-    require(fee <= 10,
+    require(fee <= MAX_TRANSFER_FEE_BASIS_POINTS,
             "Transfer fee basis points must be an integer between 0 and 10");
     _transferFeeBasisPoints = fee;
   }
@@ -596,7 +614,7 @@ contract CacheGold is IERC20, Ownable {
     if (isInactive(account) || _timeStorageFeePaid[account] == 0) {
       return 0;
     }
-    return block.timestamp.sub(_timeStorageFeePaid[account]).div(86400);
+    return block.timestamp.sub(_timeStorageFeePaid[account]).div(DAY);
   }
   
   /**
@@ -609,7 +627,7 @@ contract CacheGold is IERC20, Ownable {
     if (_timeLastActivity[account] == 0) {
       return 0;
     }
-    return block.timestamp.sub(_timeLastActivity[account]).div(86400);
+    return block.timestamp.sub(_timeLastActivity[account]).div(DAY);
   }
   
   /**
@@ -761,7 +779,7 @@ contract CacheGold is IERC20, Ownable {
    * @return A uint256 representing the storage fee owed
    */
   function storageFee(uint256 balance, uint256 daysSinceStoragePaid) public pure returns(uint256) {
-    uint256 fee = balance.mul(TOKEN).mul(daysSinceStoragePaid).div(365).div(40000000000);
+    uint256 fee = balance.mul(TOKEN).mul(daysSinceStoragePaid).div(YEAR).div(STORAGE_FEE_DENOMINATOR);
     if (fee > balance) {
       return balance;
     }
@@ -846,10 +864,10 @@ contract CacheGold is IERC20, Ownable {
       emit Transfer(to, _feeAddress, storageFeeTo);
       _timeStorageFeePaid[to] = block.timestamp;
       _endGracePeriod(to);
-    } else if (balanceToBefore < 146000) {
-      // 146000 is the minimum amount in which a storage fee would be due
-      // after a sigle day, so if the balance is above that, the storage
-      // fee would always be greater than 0.
+    } else if (balanceToBefore < MIN_BALANCE_FOR_FEES) {
+      // MIN_BALANCE_FOR_FEES is the minimum amount in which a storage fee
+      // would be due after a sigle day, so if the balance is above that,
+      // the storage fee would always be greater than 0.
       //
       // This avoids the following condition:
       // 1. User receives tokens
@@ -1114,7 +1132,7 @@ contract CacheGold is IERC20, Ownable {
   * @return uint256 the inactive fees due each year
   */
   function _calcInactiveFeePerYear(uint256 snapshotBalance) internal pure returns(uint256) {
-    uint256 inactiveFeePerYear = snapshotBalance.mul(TOKEN).div(20000000000);
+    uint256 inactiveFeePerYear = snapshotBalance.mul(TOKEN).div(INACTIVE_FEE_DENOMINATOR);
     if (inactiveFeePerYear < TOKEN) {
       return TOKEN;
     }
@@ -1134,7 +1152,7 @@ contract CacheGold is IERC20, Ownable {
                         uint256 feePerYear, 
                         uint256 paidAlready) internal pure returns(uint256) {
     uint256 daysDue = daysInactive.sub(INACTIVE_THRESHOLD_DAYS);
-    uint256 totalDue = feePerYear.mul(TOKEN).mul(daysDue).div(365).div(TOKEN).sub(paidAlready);
+    uint256 totalDue = feePerYear.mul(TOKEN).mul(daysDue).div(YEAR).div(TOKEN).sub(paidAlready);
 
     // The fee per year can be off by 0.00000001 so we can collect
     // the final dust after 200 years
