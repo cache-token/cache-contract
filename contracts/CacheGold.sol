@@ -11,7 +11,6 @@ import "./LockedGoldOracle.sol";
 contract CacheGold is IERC20, Ownable {
 
   using SafeMath for uint256;
-  using SafeMath for uint;
 
   // ERC20 Detailed Info
   /* solhint-disable */
