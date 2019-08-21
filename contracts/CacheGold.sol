@@ -727,7 +727,7 @@ contract CacheGold is IERC20, Ownable {
     uint256 sendAllAmount = balanceAfterStorage.mul(TOKEN).div(divisor).add(1);
 
     // Calc transfer fee on send all amount
-    uint256 transFee = sendAllAmount.mul(TOKEN).div(TOKEN.mul(BASIS_POINTS_MULTIPLIER).div(_transferFeeBasisPoints));
+    uint256 transFee = sendAllAmount.mul(_transferFeeBasisPoints).div(BASIS_POINTS_MULTIPLIER);
 
     // Fix to include rounding errors
     if (sendAllAmount.add(transFee) > balanceAfterStorage) {
@@ -750,7 +750,7 @@ contract CacheGold is IERC20, Ownable {
     // f(x) = x / 10,0000 (10 basis points is 0.001)
     // So transfer fee working with integers =
     // f(balance, basis) = (balance * TOKEN) / (10,000 * TOKEN / basis)
-    return value.mul(TOKEN).div(TOKEN.mul(BASIS_POINTS_MULTIPLIER).div(_transferFeeBasisPoints));
+    return value.mul(_transferFeeBasisPoints).div(BASIS_POINTS_MULTIPLIER);
   }
 
   /*
