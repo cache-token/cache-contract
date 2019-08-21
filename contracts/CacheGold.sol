@@ -1118,7 +1118,6 @@ contract CacheGold is IERC20, Ownable {
     if (inactiveFeePerYear < TOKEN) {
       return TOKEN;
     }
-    // Round up by 1 token 
     return inactiveFeePerYear;
   }
 
