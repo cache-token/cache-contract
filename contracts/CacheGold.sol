@@ -40,7 +40,7 @@ contract CacheGold is IERC20, Ownable {
   // The inactive fee of 0.50%
   uint256 private constant INACTIVE_FEE_DENOMINATOR = 20000000000;
 
-  // The minimum balance that would accure a storage fee after 1 day
+  // The minimum balance that would accrue a storage fee after 1 day
   uint256 private constant MIN_BALANCE_FOR_FEES = 146000;
 
   // Initial basis points for transfer fee
@@ -69,7 +69,7 @@ contract CacheGold is IERC20, Ownable {
 
   // If address doesn't have any activity for INACTIVE_THRESHOLD_DAYS
   // we can start deducting chunks off the address so that
-  // full balance can be recooped after 200 years. This is likely
+  // full balance can be recouped after 200 years. This is likely
   // to happen if the user loses their private key.
   mapping (address => uint256) private _inactiveFeePerYear;
 
@@ -295,7 +295,7 @@ contract CacheGold is IERC20, Ownable {
 
   /**
   * @dev Manually pay storage fees on senders address. Exchanges may want to 
-  * peridically call this function to pay owed storage fees. This is a 
+  * periodically call this function to pay owed storage fees. This is a 
   * cheaper option than 'send to self', which would also trigger paying
   * storage fees
   * 
@@ -876,7 +876,7 @@ contract CacheGold is IERC20, Ownable {
       // their previous balance was super small, there were no appreciable
       // storage fee, therefore the storage fee clock was not reset
       // 4. User now owes storage fees on entire balance, as if they
-      // held tokens for 1 years, instead of resetting clock to now.
+      // held tokens for 1 year, instead of resetting the clock to now.
       _timeStorageFeePaid[to] = block.timestamp;
     }
 
@@ -1018,7 +1018,7 @@ contract CacheGold is IERC20, Ownable {
   */
   function _updateActivity(address account) internal {
     // Cache has the ability to force collecting storage and inactivity fees, 
-    // but in the event and address was missed, can we still detect if the 
+    // but in the event an address was missed, can we still detect if the 
     // account was inactive when they next transact
     //
     // Here we simply set the account as being inactive, collect the previous
@@ -1097,7 +1097,7 @@ contract CacheGold is IERC20, Ownable {
    * [1] storage fees `to`
    * [2] transfer fee `from`
    * [3] final `from` balance
-   * ]4] final `to` balance
+   * [4] final `to` balance
    */
   function _simulateTransfer(address from, address to, uint256 value) internal view returns (uint256[5] memory) {
     uint256[5] memory ret;
@@ -1125,7 +1125,7 @@ contract CacheGold is IERC20, Ownable {
   }
   
   /**
-  * @dev Calcuate the amount of inactive fees due per year on the snapshot balance.
+  * @dev Calculate the amount of inactive fees due per year on the snapshot balance.
   * Should return 50 basis points or 1 token minimum.
   * 
   * @param snapshotBalance The balance of the account when marked inactive

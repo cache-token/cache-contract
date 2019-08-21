@@ -6,7 +6,7 @@ import "./CacheGold.sol";
 
 
 // Simple contract regulating the total supply of gold locked at any 
-// given time so that the Cache contract can't overmint tokens
+// given time so that the Cache contract can't over mint tokens
 contract LockedGoldOracle is Ownable {
 
   using SafeMath for uint256;
@@ -26,7 +26,7 @@ contract LockedGoldOracle is Ownable {
     emit LockEvent(amountGrams);
   }
   
-  // Can only unlock amount of gold if it's would leave the 
+  // Can only unlock amount of gold if it would leave the 
   // total amount of locked gold greater than or equal to the
   // number of tokens in circulation
   function unlockAmount(uint256 amountGrams) external onlyOwner {
