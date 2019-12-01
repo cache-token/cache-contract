@@ -73,8 +73,11 @@ contract CacheGold is IERC20, Ownable {
   // to happen if the user loses their private key.
   mapping (address => uint256) private _inactiveFeePerYear;
 
-  // Addresses not subject to fees
-  mapping (address => bool) private _feeExempt;
+  // Addresses not subject to transfer fees
+  mapping (address => bool) private _transferFeeExempt;
+
+  // Address is not subject to storage fees
+  mapping (address => bool) private _storageFeeExempt;
 
   // Save grace period on storage fees for an address
   mapping (address => uint256) private _storageFeeGracePeriod;
@@ -153,11 +156,11 @@ contract CacheGold is IERC20, Ownable {
     _redeemAddress = redeemAddress;
     _feeEnforcer = owner();
     _oracle = oracle;
-    _feeExempt[_feeAddress] = true;
-    _feeExempt[_redeemAddress] = true;
-    _feeExempt[_backedTreasury] = true;
-    _feeExempt[_unbackedTreasury] = true;
-    _feeExempt[owner()] = true;
+    setFeeExempt(_feeAddress);
+    setFeeExempt(_redeemAddress);
+    setFeeExempt(_backedTreasury);
+    setFeeExempt(_unbackedTreasury);
+    setFeeExempt(owner());
   }
 
   /**
@@ -355,7 +358,7 @@ contract CacheGold is IERC20, Ownable {
   function setFeeEnforcer(address enforcer) external onlyOwner returns(bool) {
     require(enforcer != address(0));
     _feeEnforcer = enforcer;
-    _feeExempt[_feeEnforcer] = true;
+    setFeeExempt(_feeEnforcer);
     return true;
   }
 
@@ -369,7 +372,7 @@ contract CacheGold is IERC20, Ownable {
     require(newFeeAddress != _unbackedTreasury, 
             "Cannot set fee address to unbacked treasury");
     _feeAddress = newFeeAddress;
-    _feeExempt[_feeAddress] = true;
+    setFeeExempt(_feeAddress);
     return true;
   }
 
@@ -383,7 +386,7 @@ contract CacheGold is IERC20, Ownable {
     require(newRedeemAddress != _unbackedTreasury,
             "Cannot set redeem address to unbacked treasury");
     _redeemAddress = newRedeemAddress;
-    _feeExempt[_redeemAddress] = true;
+    setFeeExempt(_redeemAddress);
     return true;
   }
 
@@ -397,7 +400,7 @@ contract CacheGold is IERC20, Ownable {
     require(newBackedAddress != _unbackedTreasury,
             "Cannot set backed address to unbacked treasury");
     _backedTreasury = newBackedAddress;
-    _feeExempt[_backedTreasury] = true;
+    setFeeExempt(_backedTreasury);
     return true;
   }
 
@@ -415,7 +418,7 @@ contract CacheGold is IERC20, Ownable {
     require(newUnbackedAddress != _redeemAddress,
             "Cannot set unbacked treasury to fee address ");
     _unbackedTreasury = newUnbackedAddress;
-    _feeExempt[_unbackedTreasury] = true;
+    setFeeExempt(_unbackedTreasury);
     return true;
   }
 
@@ -441,20 +444,30 @@ contract CacheGold is IERC20, Ownable {
   }
 
   /**
-  * @dev Set this account as being exempt from fees. This may be used
+  * @dev Set this account as being exempt from transfer fees. This may be used
   * in special circumstance for cold storage addresses owed by Cache, exchanges, etc.
-  * @param account The account to exempt from storage and transfer fees
+  * @param account The account to exempt from transfer fees
   */
-  function setFeeExempt(address account) external onlyOwner {
-    _feeExempt[account] = true;
+  function setTransferFeeExempt(address account) external onlyOwner {
+    _transferFeeExempt[account] = true;
+  }
+
+  /**
+  * @dev Set this account as being exempt from storage fees. This may be used
+  * in special circumstance for cold storage addresses owed by Cache, exchanges, etc.
+  * @param account The account to exempt from storage fees
+  */
+  function setStorageFeeExempt(address account) external onlyOwner {
+    _storageFeeExempt[account] = true;
   }
   
   /**
-  * @dev Set account is no longer exempt from fees
+  * @dev Set account is no longer exempt from all fees
   * @param account The account to reactivate fees
   */
   function unsetFeeExempt(address account) external onlyOwner {
-    _feeExempt[account] = false;
+    _transferFeeExempt[account] = false;
+    _storageFeeExempt[account] = false;
   }
 
   /**
@@ -578,14 +591,42 @@ contract CacheGold is IERC20, Ownable {
   }
 
   /**
-  * @dev Check if the address given is extempt from storage and transfer fees
-  * @param account The address to check
-  * @return A boolean if the address passed is considered an non fee paying address
+  * @dev Set this account as being exempt from all fees. This may be used
+  * in special circumstance for cold storage addresses owed by Cache, exchanges, etc.
+  * @param account The account to exempt from storage and transfer fees
   */
-  function isFeeExempt(address account) public view returns(bool) {
-    return _feeExempt[account];
+  function setFeeExempt(address account) public onlyOwner {
+    _transferFeeExempt[account] = true;
+    _storageFeeExempt[account] = true;
   }
-  
+
+  /**
+  * @dev Check if the address given is extempt from storage fees
+  * @param account The address to check
+  * @return A boolean if the address passed is exempt from storage fees
+  */
+  function isStorageFeeExempt(address account) public view returns(bool) {
+    return _storageFeeExempt[account];
+  }
+
+  /**
+  * @dev Check if the address given is extempt from transfer fees
+  * @param account The address to check
+  * @return A boolean if the address passed is exempt from transfer fees
+  */
+  function isTransferFeeExempt(address account) public view returns(bool) {
+    return _transferFeeExempt[account];
+  }
+
+  /**
+  * @dev Check if the address given is extempt from transfer fees
+  * @param account The address to check
+  * @return A boolean if the address passed is exempt from transfer fees
+  */
+  function isAllFeeExempt(address account) public view returns(bool) {
+    return _transferFeeExempt[account] && _storageFeeExempt[account];
+  }
+
   /**
   * @dev Check if the address is considered inactive for not having transacted with
   * the contract for INACTIVE_THRESHOLD_DAYS
@@ -649,7 +690,7 @@ contract CacheGold is IERC20, Ownable {
     // If an account is in an inactive state those fees take over and
     // storage fees are effectively paused
     uint256 balance = _balances[account];
-    if (isInactive(account) || isFeeExempt(account) || balance == 0) {
+    if (isInactive(account) || isStorageFeeExempt(account) || balance == 0) {
       return 0;
     }
 
@@ -724,12 +765,8 @@ contract CacheGold is IERC20, Ownable {
     require(account != address(0));
 
     // Internal addresses pay no fees, so they can send their entire balance
-    if (isFeeExempt(account)) {
-      return _balances[account];
-    }
-
     uint256 balanceAfterStorage = _balances[account].sub(calcOwedFees(account));
-    if (_transferFeeBasisPoints == 0) {
+    if (_transferFeeBasisPoints == 0 || isTransferFeeExempt(account)) {
       return balanceAfterStorage;
     }
 
@@ -761,7 +798,7 @@ contract CacheGold is IERC20, Ownable {
    * @return A uint256 representing the transfer fee on sending the value given
    */
   function calcTransferFee(address account, uint256 value) public view returns(uint256) {
-    if (isFeeExempt(account)) {
+    if (isTransferFeeExempt(account)) {
       return 0;
     }
     // Basis points -> decimal multiplier:
@@ -964,7 +1001,7 @@ contract CacheGold is IERC20, Ownable {
         _balances[account] > 0 &&
         daysSinceActivity(account) >= INACTIVE_THRESHOLD_DAYS &&
         !isInactive(account) &&
-        !isFeeExempt(account) &&
+        !isAllFeeExempt(account) &&
         _balances[account].sub(calcStorageFee(account)) > 0) {
       return true;
     }

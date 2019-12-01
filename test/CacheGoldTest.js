@@ -266,9 +266,9 @@ contract('CacheGold', function(accounts) {
         assert.equal(new_oracle, accounts[9], "The oracle address has changed");
 
         // Assert these new addresses are set as fee exempt
-        assert(await instance.isFeeExempt(accounts[7]));
-        assert(await instance.isFeeExempt(accounts[8]));
-        assert(await instance.isFeeExempt(accounts[9]));
+        assert(await instance.isAllFeeExempt(accounts[7]));
+        assert(await instance.isAllFeeExempt(accounts[8]));
+        assert(await instance.isAllFeeExempt(accounts[9]));
 
         // Assert can't set to 0 address
         await truffleAssert.reverts(instance.setFeeAddress(zero_addr));
@@ -844,6 +844,59 @@ contract('CacheGold', function(accounts) {
         await instance.unsetFeeExempt(external1);
         assert((await instance.calcStorageFee(external1)) > 0, "Bad storage fee for external1");
 
+    });
+
+    it("Set transfer fee and storage fee exempt separately", async function() {
+        await instance.addBackedTokens(1000*TOKEN)
+        await instance.transfer(external1, 10*TOKEN, {'from': backed_addr});
+        await advanceTimeAndBlock(365*DAY);
+
+        assert(!await instance.isTransferFeeExempt(external1));
+        assert(!await instance.isStorageFeeExempt(external1));
+        assert(!await instance.isAllFeeExempt(external1));
+
+        // Turn off transfer fees and test
+        await instance.setTransferFeeExempt(external1);
+        assert(await instance.isTransferFeeExempt(external1));
+        assert(!await instance.isStorageFeeExempt(external1));
+        assert(!await instance.isAllFeeExempt(external1));
+
+        // BalanceOf should show balance - owed storage and not 
+        // account for future transfer fee
+        expectedStorageFee = await instance.calcStorageFee(external1);
+        expectedBalance = new BN(10*TOKEN).sub(expectedStorageFee);
+        realBalance = await instance.balanceOf(external1);
+        assert(expectedBalance.eq(realBalance), "Balances do not match");
+        
+        // Send transfer and make sure only storage fee is paid
+        result = await instance.transfer(external2, TOKEN, {'from': external1});
+        balanceFee = await instance.balanceOf(fee_addr);
+        balanceAfter = await instance.balanceOf(external1);
+        assert(balanceFee.eq(expectedStorageFee));
+        assert(balanceAfter.eq(expectedBalance.sub(TOKEN)));
+
+        // Now make only storage fee exempt
+        await instance.unsetFeeExempt(external1);
+        assert(!await instance.isTransferFeeExempt(external1));
+        assert(!await instance.isStorageFeeExempt(external1));
+        assert(!await instance.isAllFeeExempt(external1));
+
+        await instance.setStorageFeeExempt(external1)
+        assert(!await instance.isTransferFeeExempt(external1));
+        assert(await instance.isStorageFeeExempt(external1));
+        assert(!await instance.isAllFeeExempt(external1));
+
+        // Advance a year, storage fee should be 0
+        await advanceTimeAndBlock(365*DAY);
+        storageFee = await instance.calcStorageFee(external1);
+        assert(storageFee.eq(new BN(0)));
+
+        // Sending a transfer should incur a fee though
+        expectedTransFee = await instance.calcTransferFee(external1, TOKEN);
+        assert(expectedTransFee.gt(new BN(0)));
+        result = await instance.transfer(external2, TOKEN, {'from': external1});
+        balanceAfter = await instance.balanceOfNoFees(external1);
+        assert(balanceAfter.eq(expectedBalance.sub(TOKEN).sub(TOKEN).sub(expectedTransFee)));
     });
 
     it("Test storage and transfer fees on real looking transfers", async function () {
