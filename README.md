@@ -1,7 +1,9 @@
 # CacheGold Contract
 
-## Description
-This repository contains the CacheGold contract; an ERC20 compatible token in which 1 token represents 1 gram of physical gold. The token is divisible to 8 decimal places.
+## Overview
+This repository contains the CacheGold contract; an ERC20 compatible token in which 1 token represents 1 gram of pure physical gold. A full description can be found in the [token documentation](https://github.com/cache-token/docs/blob/master/TOKEN_OVERVIEW.md).
+
+A copy of our contract audit can be found [here](https://github.com/cache-token/docs/blob/master/CACHE_Gold_Audit_Zerotrust.pdf).
 
 ### Install Dependencies
 With node v8 or higher installed..
@@ -43,6 +45,8 @@ npm run deploy-dev
 ```
 
 ### Deploy To Ethereum Testnet
+Need to fill in variables in [.env](./.env)
+
 ```
 npm run deploy-ropsten
 ```

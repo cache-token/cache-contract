@@ -11,8 +11,7 @@
     "openzeppelin-solidity": "^2.3.0",
     "truffle": "^5.0.24",
     "truffle-assertions": "^0.8.0",
-    "truffle-hdwallet-provider": "^1.0.5",
-    "web3": "^1.0.0-beta.55"
+    "truffle-hdwallet-provider": "^1.0.5"
   },
   "devDependencies": {
     "bignumber.js": "^8.1.1",
@@ -31,9 +30,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://conscott@bitbucket.org/conscott/cache-contract.git"
+    "url": "git+https://github.com/cache-token/cache-contract.git"
   },
   "author": "",
   "license": "ISC",
-  "homepage": "https://bitbucket.org/conscott/cache-contract#readme"
+  "homepage": "https://github.com/cache-token/cache-contract.git#readme"
 }
