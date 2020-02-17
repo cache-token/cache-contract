@@ -66221,8 +66221,8 @@
       "transactionHash": "0xf55696fdd866aa9f5ca059b1f4e6539eab39005456240bea454965fea2accb2a"
     }
   },
-  "schemaVersion": "3.0.19",
-  "updatedAt": "2019-12-01T15:58:48.981Z",
+  "schemaVersion": "3.0.11",
+  "updatedAt": "2020-02-17T09:37:47.920Z",
   "devdoc": {
     "author": "Cache Pte Ltd",
     "methods": {

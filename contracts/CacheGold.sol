@@ -14,7 +14,7 @@ contract CacheGold is IERC20, Ownable {
 
   // ERC20 Detailed Info
   /* solhint-disable */
-  string public constant name = "Cache Gold";
+  string public constant name = "CACHE Gold";
   string public constant symbol = "CGT";
   uint8 public constant decimals = 8;
   /* solhint-enable */
@@ -60,7 +60,7 @@ contract CacheGold is IERC20, Ownable {
 
   // Last time storage fee was paid
   mapping (address => uint256) private _timeStorageFeePaid;
-  
+
   // Last time the address produced a transaction on this contract
   mapping (address => uint256) private _timeLastActivity;
 
@@ -81,7 +81,7 @@ contract CacheGold is IERC20, Ownable {
 
   // Save grace period on storage fees for an address
   mapping (address => uint256) private _storageFeeGracePeriod;
-  
+
   // Current total number of tokens created
   uint256 private _totalSupply;
 
@@ -130,13 +130,13 @@ contract CacheGold is IERC20, Ownable {
   // to signal a change in the circulating supply
   event RemoveGold(uint256 amount);
 
-  // When an account has no activity for INACTIVE_THRESHOLD_DAYS 
+  // When an account has no activity for INACTIVE_THRESHOLD_DAYS
   // it will be flagged as inactive
   event AccountInactive(address indexed account, uint256 feePerYear);
 
   // If an previoulsy dormant account is reactivated
   event AccountReActive(address indexed account);
-  
+
   /**
    * @dev Contructor for the CacheGold token sets internal addresses
    * @param unbackedTreasury The address of the unbacked treasury
@@ -180,7 +180,7 @@ contract CacheGold is IERC20, Ownable {
     // Update activity for the sender
     _updateActivity(msg.sender);
 
-    // Can opportunistically mark an account inactive if someone 
+    // Can opportunistically mark an account inactive if someone
     // sends money to it
     if (_shouldMarkInactive(to)) {
       _setInactive(to);
@@ -261,7 +261,7 @@ contract CacheGold is IERC20, Ownable {
   * _backedTreasury. Any remaining tokens will actually be minted.
   * This operation will fail if there is not a sufficient supply of locked gold
   * as determined by the LockedGoldOracle
-  * 
+  *
   * @param value The amount of tokens to add to the backed treasury
   * @return A boolean that indicates if the operation was successful.
   */
@@ -297,11 +297,11 @@ contract CacheGold is IERC20, Ownable {
   }
 
   /**
-  * @dev Manually pay storage fees on senders address. Exchanges may want to 
-  * periodically call this function to pay owed storage fees. This is a 
+  * @dev Manually pay storage fees on senders address. Exchanges may want to
+  * periodically call this function to pay owed storage fees. This is a
   * cheaper option than 'send to self', which would also trigger paying
   * storage fees
-  * 
+  *
   * @return A boolean that indicates if the operation was successful.
   */
   function payStorageFee() external returns (bool) {
@@ -309,7 +309,7 @@ contract CacheGold is IERC20, Ownable {
     _payStorageFee(msg.sender);
     return true;
   }
-  
+
   function setAccountInactive(address account) external onlyEnforcer returns (bool) {
     require(_shouldMarkInactive(account), "Account not eligible to be marked inactive");
     _setInactive(account);
@@ -317,10 +317,10 @@ contract CacheGold is IERC20, Ownable {
 
   /**
   * @dev Contract allows the forcible collection of storage fees on an address
-  * if it is has been more than than 365 days since the last time storage fees 
+  * if it is has been more than than 365 days since the last time storage fees
   * were paid on this address.
   *
-  * Alternatively inactive fees may also be collected periodically on a prorated 
+  * Alternatively inactive fees may also be collected periodically on a prorated
   * basis if the account is currently marked as inactive.
   *
   * @param account The address to pay storage fees on
@@ -369,7 +369,7 @@ contract CacheGold is IERC20, Ownable {
   */
   function setFeeAddress(address newFeeAddress) external onlyOwner returns(bool) {
     require(newFeeAddress != address(0));
-    require(newFeeAddress != _unbackedTreasury, 
+    require(newFeeAddress != _unbackedTreasury,
             "Cannot set fee address to unbacked treasury");
     _feeAddress = newFeeAddress;
     setFeeExempt(_feeAddress);
@@ -460,7 +460,7 @@ contract CacheGold is IERC20, Ownable {
   function setStorageFeeExempt(address account) external onlyOwner {
     _storageFeeExempt[account] = true;
   }
-  
+
   /**
   * @dev Set account is no longer exempt from all fees
   * @param account The account to reactivate fees
@@ -481,7 +481,7 @@ contract CacheGold is IERC20, Ownable {
   }
 
   /**
-  * @dev Gets the balance of the specified address deducting owed fees and 
+  * @dev Gets the balance of the specified address deducting owed fees and
   * accounting for the maximum amount that could be sent including transfer fee
   * @param owner The address to query the balance of.
   * @return An uint256 representing the amount sendable by the passed address
@@ -490,10 +490,10 @@ contract CacheGold is IERC20, Ownable {
   function balanceOf(address owner) external view returns (uint256) {
     return calcSendAllBalance(owner);
   }
-  
+
   /**
   * @dev Gets the balance of the specified address not deducting owed fees.
-  * this returns the 'traditional' ERC-20 balance that represents the balance 
+  * this returns the 'traditional' ERC-20 balance that represents the balance
   * currently stored in contract storage.
   * @param owner The address to query the balance of.
   * @return An uint256 representing the amount stored in passed address
@@ -565,7 +565,7 @@ contract CacheGold is IERC20, Ownable {
   }
 
   /**
-  * @return the current number of days and address is exempt 
+  * @return the current number of days and address is exempt
   * from storage fees upon receiving tokens
   */
   function storageFeeGracePeriodDays() external view returns(uint256) {
@@ -578,7 +578,7 @@ contract CacheGold is IERC20, Ownable {
   function transferFeeBasisPoints() external view returns(uint256) {
     return _transferFeeBasisPoints;
   }
-  
+
   /**
   * @dev Simulate the transfer from one address to another see final balances and associated fees
   * @param from The address to transfer from.
@@ -657,11 +657,11 @@ contract CacheGold is IERC20, Ownable {
     }
     return block.timestamp.sub(_timeStorageFeePaid[account]).div(DAY);
   }
-  
+
   /**
   * @dev Get the days since the account last sent a transaction to the contract (activity)
   * @param account The address to check
-  * @return A uint256 representing the number of days since the address last had activity 
+  * @return A uint256 representing the number of days since the address last had activity
   * with the contract
   */
   function daysSinceActivity(address account) public view returns(uint256) {
@@ -670,7 +670,7 @@ contract CacheGold is IERC20, Ownable {
     }
     return block.timestamp.sub(_timeLastActivity[account]).div(DAY);
   }
-  
+
   /**
   * @dev Returns the total number of fees owed on a particular address
   * @param account The address to check
@@ -711,7 +711,7 @@ contract CacheGold is IERC20, Ownable {
       return 0;
     }
 
-    // This is an edge case where the account has not yet been marked inactive, but 
+    // This is an edge case where the account has not yet been marked inactive, but
     // will be marked inactive whenever there is a transaction allowing it to be marked.
     // Therefore we know storage fees will only be valid up to a point, and inactive
     // fees will take over.
@@ -743,7 +743,7 @@ contract CacheGold is IERC20, Ownable {
                           _inactiveFeePerYear[account],
                           _inactiveFeePaid[account]);
     } else if (_shouldMarkInactive(account)) {
-      // Account has not yet been marked inactive in contract, but the inactive fees will still be due. 
+      // Account has not yet been marked inactive in contract, but the inactive fees will still be due.
       // Just assume snapshotBalance will be current balance after fees
       uint256 snapshotBalance = balance.sub(calcStorageFee(account));
       return _calcInactiveFee(snapshotBalance,                          // current balance
@@ -753,7 +753,7 @@ contract CacheGold is IERC20, Ownable {
     }
     return 0;
   }
-  
+
   /**
    * @dev Calculate the amount that would clear the balance from the address
    * accounting for owed storage and transfer fees
@@ -850,7 +850,7 @@ contract CacheGold is IERC20, Ownable {
 
     _transferRestrictions(to, from);
 
-    // If the account was previously inactive and initiated the transfer, the 
+    // If the account was previously inactive and initiated the transfer, the
     // inactive fees and storage fees have already been paid by the time we get here
     // via the _updateActivity() call
     uint256 storageFeeFrom = calcStorageFee(from);
@@ -965,7 +965,7 @@ contract CacheGold is IERC20, Ownable {
     _endGracePeriod(account);
     return storeFee;
   }
-  
+
   /**
    * @dev Apply inactive fee deduction
    * @param account The account to pay inactive fees
@@ -989,8 +989,8 @@ contract CacheGold is IERC20, Ownable {
     return fee;
   }
 
-  function _shouldMarkInactive(address account) internal view returns(bool) { 
-    // Can only mark an account as inactive if 
+  function _shouldMarkInactive(address account) internal view returns(bool) {
+    // Can only mark an account as inactive if
     //
     // 1. it's not fee exempt
     // 2. it has a balance
@@ -1011,7 +1011,7 @@ contract CacheGold is IERC20, Ownable {
   /**
   * @dev Mark an account as inactive. The function will automatically deduct
   * owed storage fees and inactive fees in one go.
-  * 
+  *
   * @param account The account to mark inactive
   */
   function _setInactive(address account) internal {
@@ -1020,7 +1020,7 @@ contract CacheGold is IERC20, Ownable {
     uint256 storeFee = calcStorageFee(account);
     uint256 snapshotBalance = _balances[account].sub(storeFee);
 
-    // all _setInactive calls are wrapped in _shouldMarkInactive, which 
+    // all _setInactive calls are wrapped in _shouldMarkInactive, which
     // already checks this, so we shouldn't hit this condition
     assert(snapshotBalance > 0);
 
@@ -1048,14 +1048,14 @@ contract CacheGold is IERC20, Ownable {
 
   /**
   * @dev Update the activity clock on an account thats originated a transaction.
-  * If the account has previously been marked inactive or should have been 
+  * If the account has previously been marked inactive or should have been
   * marked inactive, it will opportunistically collect those owed fees.
-  * 
+  *
   * @param account The account to update activity
   */
   function _updateActivity(address account) internal {
-    // Cache has the ability to force collecting storage and inactivity fees, 
-    // but in the event an address was missed, can we still detect if the 
+    // Cache has the ability to force collecting storage and inactivity fees,
+    // but in the event an address was missed, can we still detect if the
     // account was inactive when they next transact
     //
     // Here we simply set the account as being inactive, collect the previous
@@ -1064,7 +1064,7 @@ contract CacheGold is IERC20, Ownable {
       // Call will pay existing storage fees before marking inactive
       _setInactive(account);
     }
-    
+
     // Pay remaining fees and reset fee clocks
     if (isInactive(account)) {
       _payInactiveFee(account);
@@ -1088,7 +1088,7 @@ contract CacheGold is IERC20, Ownable {
       _storageFeeGracePeriod[account] = 0;
     }
   }
-  
+
   /**
   * @dev Enforce the rules of which addresses can transfer to others
   * @param to The sending address
@@ -1098,7 +1098,7 @@ contract CacheGold is IERC20, Ownable {
     require(from != address(0));
     require(to != address(0));
     require(to != address(this), "Cannot transfer tokens to the contract");
-    
+
     // unbacked treasury can only transfer to backed treasury
     if (from == _unbackedTreasury) {
       require(to == _backedTreasury,
@@ -1114,7 +1114,7 @@ contract CacheGold is IERC20, Ownable {
     // Only the backed treasury  and redeem address
     // can transfer to unbacked treasury
     if (to == _unbackedTreasury) {
-      require((from == _backedTreasury) || (from == _redeemAddress), 
+      require((from == _backedTreasury) || (from == _redeemAddress),
               "Unbacked treasury can only receive from redeem address and backed treasury");
     }
 
@@ -1160,11 +1160,11 @@ contract CacheGold is IERC20, Ownable {
     }
     return ret;
   }
-  
+
   /**
   * @dev Calculate the amount of inactive fees due per year on the snapshot balance.
   * Should return 50 basis points or 1 token minimum.
-  * 
+  *
   * @param snapshotBalance The balance of the account when marked inactive
   * @return uint256 the inactive fees due each year
   */
@@ -1186,7 +1186,7 @@ contract CacheGold is IERC20, Ownable {
   */
   function _calcInactiveFee(uint256 balance,
                         uint256 daysInactive,
-                        uint256 feePerYear, 
+                        uint256 feePerYear,
                         uint256 paidAlready) internal pure returns(uint256) {
     uint256 daysDue = daysInactive.sub(INACTIVE_THRESHOLD_DAYS);
     uint256 totalDue = feePerYear.mul(TOKEN).mul(daysDue).div(YEAR).div(TOKEN).sub(paidAlready);

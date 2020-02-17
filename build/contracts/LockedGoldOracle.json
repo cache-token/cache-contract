@@ -2562,8 +2562,8 @@
       "transactionHash": "0xc470c0e87c028154c8f8dbab31ed3751c81a6545642e068a5c54a1cbfe34a4c9"
     }
   },
-  "schemaVersion": "3.0.19",
-  "updatedAt": "2019-12-01T15:58:49.004Z",
+  "schemaVersion": "3.0.11",
+  "updatedAt": "2020-02-17T09:37:47.942Z",
   "devdoc": {
     "methods": {
       "isOwner()": {
