@@ -1,6 +1,5 @@
 // Load secret values from .env.* files depending on APP_CONFIG
 require('dotenv').config();
-
 const HDWalletProvider = require("truffle-hdwallet-provider");
 
 // create wallet from existing private key
@@ -11,7 +10,7 @@ var ganacheHost = process.env.GANACHE_HOST || '127.0.0.1';
 module.exports = {
   compilers: {
     solc: {
-      version: "0.5.10",
+      version: "0.5.16",
     }
   },
   solc: {
@@ -32,8 +31,8 @@ module.exports = {
       host: 'localhost',
       port: 8555,
       network_id: "*",
-      gas: 0xfffffffffff, 
-      gasPrice: 0x01 
+      gas: 0xfffffffffff,
+      gasPrice: 0x01
     },
     // For using self hosted geth instance
     geth: {
@@ -43,7 +42,7 @@ module.exports = {
     },
     // For using Infura Ropsten Provider
     ropsten: {
-      provider: () => new HDWalletProvider(privateKeys, "https://ropsten.infura.io/v3/" + process.env.infuraKey, 0, 1), 
+      provider: () => new HDWalletProvider(privateKeys, "https://ropsten.infura.io/v3/" + process.env.infuraKey, 0, 1),
       network_id: 3,
       confirmations: 1,
       skipDryRun: true
