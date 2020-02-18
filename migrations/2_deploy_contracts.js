@@ -13,8 +13,8 @@ module.exports = function(deployer, network, accounts) {
 
 
     // Deploy oracle first then token contract
-    if (network === 'test' || 
-        network === 'local' || 
+    if (network === 'test' ||
+        network === 'local' ||
         network === 'development' ||
         network === 'coverage') {
         deployer.then(function() {
@@ -31,7 +31,7 @@ module.exports = function(deployer, network, accounts) {
             console.log("Deployed CacheGold to " + cache.address);
             await oracle.setCacheContract(cache.address);
         });
-    } else if (network === 'ropsten') {
+    } else if (network === 'ropsten' || network === 'mainnet') {
         deployer.then(function() {
           return LockedGoldOracle.new();
         }).then(function(lgo) {

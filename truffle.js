@@ -19,6 +19,9 @@ module.exports = {
       runs: 200
     }
   },
+  plugins: [
+    'truffle-flatten',
+  ],
   networks: {
     // Ganache interface
     local: {
@@ -51,8 +54,8 @@ module.exports = {
     mainnet: {
       provider: () => new HDWalletProvider(privateKeys, "https://mainnet.infura.io/v3/" + process.env.infuraKey, 0, 1),
       network_id: 1,
-      gas: 4712388,
-      gasPrice: 10000000000
+      confirmations: 1,
+      skipDryRun: true
     }
   }
 };

@@ -11,6 +11,7 @@
     "openzeppelin-solidity": "^2.3.0",
     "truffle": "^5.0.24",
     "truffle-assertions": "^0.8.0",
+    "truffle-flattener": "^1.4.2",
     "truffle-hdwallet-provider": "^1.0.5"
   },
   "devDependencies": {
@@ -23,8 +24,8 @@
     "compile": "./node_modules/.bin/truffle compile",
     "test": "./node_modules/.bin/truffle test",
     "deploy-dev": "APP_CONFIG=dev ./node_modules/.bin/truffle migrate --compile-all --reset --network local",
-    "deploy-ropsten": "APP_CONFIG=ropsten ./node_modules/.bin/truffle migrate --compile-all --reset --network ropsten",
-    "deploy-mainnet": "APP_CONFIG=mainnet ./node_modules/.bin/truffle migrate --compile-all --reset --network mainnet",
+    "deploy-ropsten": "APP_CONFIG=ropsten ./node_modules/.bin/truffle migrate --reset --network ropsten",
+    "deploy-mainnet": "APP_CONFIG=mainnet ./node_modules/.bin/truffle migrate --reset --network mainnet",
     "coverage": "./coverage.sh",
     "lint": "./node_modules/.bin/solhint contracts/*.sol"
   },
